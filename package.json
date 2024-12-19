@@ -1,0 +1,16 @@
+{
+  "name": "simple-webserver",
+  "version": "1.0.0",
+  "description": "I am relearning the shenanigans of HTTP and Node.js",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Nicholas O'Brien",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/obee111/simple-webserver"
+  }
+}
