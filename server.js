@@ -9,6 +9,34 @@ var config = {
 	host: "localhost"
 }
 
+var contType = (ext) => {
+	let type
+	let lang
+	// set the types based on approved file extensions
+	switch(ext){
+		case "html":
+			type = "text"
+			lang = "html"
+			break
+		case "css":
+			type = "text"
+			lang = "css"
+			break
+		case "js":
+			type = "text"
+			lang = "javascript"
+			break
+		case "json":
+			type = "application"
+			lang = "json"
+			break
+		default:
+			type = "text"
+			lang = "plain"
+	}
+	return `${type}/${lang}`
+}
+
 var server = http.createServer((req, res) => {
 	let urlVals = req.url.split("?");
 	let link = urlVals[0];
@@ -72,49 +100,30 @@ var server = http.createServer((req, res) => {
 						// isolate the extension 
 						let ext = link.split(".")
 						ext = ext[ext.length-1]
-						// placeholders for the two parts of content type header
-						let type
-						let lang
-						// set the types based on approved file extensions
-						switch(ext){
-							case "html":
-								type = "text"
-								lang = "html"
-								break
-							case "css":
-								type = "text"
-								lang = "css"
-								break
-							case "js":
-								type = "text"
-								lang = "javascript"
-								break
-							case "json":
-								type = "application"
-								lang = "json"
-								break
-							default:
-								type = "text"
-								lang = "plain"
-						} 
-						res.writeHead(200, {"Content-Type": `${type}/${lang}`})
+						// placeholders for the two parts of content type header 
+						res.writeHead(200, {"Content-Type": contType(ext)})
 						res.end(data)
 					}
 				})
 			}
 			break
-		// if it isnt a get request I'm not dealing with it right now. I'm busy 
+		// if we get a post request we just respond with the data in a web page 
 		case "POST":
+			// summon our head and out feet
+			let headfile = fs.readFileSync("./headfile.html");
+			let footfile = fs.readFileSync("./footfile.html");
+			// empty string to capture data 
 			let body='';
+			// append to empty string when we get data
 			req.on('data', (data => {
 				body += data;
 				console.log(`data: ${data}`)
 			}))
+			// when we have the data we just package and fire that out
 			req.on('end', ()=>{
-				res.writeHead(200, {"Content-Type":"text/plain"})
-				res.end(body)
+				res.writeHead(200, {"Content-Type": contType("html")})
+				res.end(headfile + body + footfile);
 			})
-			console.log(body)
 			break
 		default:
 			res.writeHead(403, {"Content-Type": "text/plain"})
