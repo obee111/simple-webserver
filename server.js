@@ -1,13 +1,6 @@
 var http = require("http");
 var fs = require("fs");
-// some config variables. 
-var config = {
-	indexFile: "index.html", // index file refers to what the main page of each dir should be named
-	contentDir: "./content/", // basically where all the junk is hiding
-	charset: "utf8",
-	port: 8080,
-	host: "localhost"
-}
+var config = require("./config");
 
 var contType = (ext) => {
 	let type
@@ -54,7 +47,8 @@ var server = http.createServer((req, res) => {
 					if (err){
 						// 410 is file gone. file not found doesnt seem appropriate for /
 						res.writeHead(410, {"Content-Type": "text/html"})
-						res.end("<html><body><h1>File gone :/</h1></body></html>")
+						let errRes = fs.readFileSync(config.errorFiles.directory + config.errorFiles.gone)
+						res.end(errRes)
 					}
 					else {
 						res.writeHead(200, {"Content-Type": "text/html"})
@@ -108,23 +102,24 @@ var server = http.createServer((req, res) => {
 			}
 			break
 		// if we get a post request we just respond with the data in a web page 
-		case "POST":
-			// summon our head and out feet
-			let headfile = fs.readFileSync("./headfile.html");
-			let footfile = fs.readFileSync("./footfile.html");
-			// empty string to capture data 
-			let body='';
-			// append to empty string when we get data
-			req.on('data', (data => {
-				body += data;
-				console.log(`data: ${data}`)
-			}))
-			// when we have the data we just package and fire that out
-			req.on('end', ()=>{
-				res.writeHead(200, {"Content-Type": contType("html")})
-				res.end(headfile + body + footfile);
-			})
-			break
+		// Realistically this does not need to be able to handle POST REQUESTS
+		// case "POST":
+		// 	// summon our head and out feet
+		// 	let headfile = fs.readFileSync("./headfile.html");
+		// 	let footfile = fs.readFileSync("./footfile.html");
+		// 	// empty string to capture data 
+		// 	let body='';
+		// 	// append to empty string when we get data
+		// 	req.on('data', (data => {
+		// 		body += data;
+		// 		console.log(`data: ${data}`)
+		// 	}))
+		// 	// when we have the data we just package and fire that out
+		// 	req.on('end', ()=>{
+		// 		res.writeHead(200, {"Content-Type": contType("html")})
+		// 		res.end(headfile + body + footfile);
+		// 	})
+		// 	break
 		default:
 			res.writeHead(403, {"Content-Type": "text/plain"})
 			res.end("Forbidden")
@@ -134,5 +129,5 @@ var server = http.createServer((req, res) => {
 })
 
 server.listen(config.port, config.host, ()=>{
-	console.log("she goin");
+	console.log(`Live at ${config.host}:${config.port}`);
 })
