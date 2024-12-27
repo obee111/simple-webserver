@@ -29,6 +29,17 @@ var contType = (ext) => {
 	}
 	return `${type}/${lang}`
 }
+var getErrFile = (code, errFile) => {
+	fs.readFile(config.errorFiles.directory + errFile, (err, data) => {
+		if (err) {
+			return `Error ${code}`
+			console.log(`${code}.html wasn't sent`)
+		}
+		else {
+			return data
+		}
+	})
+}
 
 var server = http.createServer((req, res) => {
 	let urlVals = req.url.split("?");
@@ -47,8 +58,9 @@ var server = http.createServer((req, res) => {
 					if (err){
 						// 410 is file gone. file not found doesnt seem appropriate for /
 						res.writeHead(410, {"Content-Type": "text/html"})
-						let errRes = fs.readFileSync(config.errorFiles.directory + config.errorFiles.gone)
-						res.end(errRes)
+						// let errRes = fs.readFileSync(config.errorFiles.directory + config.errorFiles.gone)
+						// res.end(errRes)
+						res.end(getErrFile(410, config.errorFiles.gone))
 					}
 					else {
 						res.writeHead(200, {"Content-Type": "text/html"})
@@ -72,7 +84,8 @@ var server = http.createServer((req, res) => {
 					// if we cant find it we tell them 
 					if (err){
 						res.writeHead(404, {"Content-Type": "text/html"})
-						res.end(`<html><body><h1>uh uuuuuh: ${file}</h1></body></html>`)
+						//res.end(`<html><body><h1>uh uuuuuh: ${file}</h1></body></html>`)
+						res.end(getErrFile(404, config.errorFiles.notFound))
 					}
 					else {
 						// when we find the index file for that dir we just fire it right at them. simple as
@@ -87,7 +100,8 @@ var server = http.createServer((req, res) => {
 					// if the file is MIA just tell them to get f***ed
 					if (err) {
 						res.writeHead(404, {"Content-Type": "text/html"})
-						res.end("<center>404</center>")
+						res.end(getErrFile(404, config.errorFiles.notFound))
+
 					}
 					// if we cant call them idiots we need to do some work
 					else {
@@ -101,30 +115,12 @@ var server = http.createServer((req, res) => {
 				})
 			}
 			break
-		// if we get a post request we just respond with the data in a web page 
-		// Realistically this does not need to be able to handle POST REQUESTS
-		// case "POST":
-		// 	// summon our head and out feet
-		// 	let headfile = fs.readFileSync("./headfile.html");
-		// 	let footfile = fs.readFileSync("./footfile.html");
-		// 	// empty string to capture data 
-		// 	let body='';
-		// 	// append to empty string when we get data
-		// 	req.on('data', (data => {
-		// 		body += data;
-		// 		console.log(`data: ${data}`)
-		// 	}))
-		// 	// when we have the data we just package and fire that out
-		// 	req.on('end', ()=>{
-		// 		res.writeHead(200, {"Content-Type": contType("html")})
-		// 		res.end(headfile + body + footfile);
-		// 	})
-		// 	break
+		// DO WHAT YOU WANT WITH POST REQUESTS 
 		default:
 			res.writeHead(403, {"Content-Type": "text/plain"})
-			res.end("Forbidden")
-			break
+			res.end(getErrFile(403, config.errorFiles.forbidden))
 
+		break
 	}
 })
 
