@@ -17,3 +17,20 @@ Intent is to have a webserver that can do any static website you throw at it
 - Image / Video support
 - Learn how webservers actually work so I can run this like nginx
 - Make config super easy to use
+
+## File structure
+
+Everything except for what is listed below is there just for an example
+
+```
+.
+	/README.md
+	/package.json
+	/config.js
+	/server.js
+	/content/
+		(directory where content is served from, configurable in config.js)
+	/error-files/
+		(directory for error responses, configurable in config.js)
+
+```

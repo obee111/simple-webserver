@@ -93,9 +93,12 @@ var server = http.createServer((req, res) => {
 							}
 							else {
 								// Semi sure this works every time
+								// Respond with 200 because this is (probably) intentional
 								res.writeHead(200, {"Content-Type": contType("html")})
+								// synchronously load header and footer files
 								let header = fs.readFileSync(config.headerFile)
 								let footer = fs.readFileSync(config.footerFile)
+								// respond with header + list + footer
 								res.write(header + `<h3>${link}</h3><ul>`);
 								for (var i = 0; i < data.length; i++) {
 									res.write(`<li><a href="${link + "/" + data[i]}">${data[i]}</a></li>`)

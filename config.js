@@ -10,7 +10,7 @@ var config = {
 	// hostname (?)
 	host: "localhost",
 	// Does a lack of an index file in directory return a list of it's contents contents
-	viewDirs: true,
+	viewDirs: true, // I need to figure out how to make this work (Feature for futute)
 	// below files determine head/foot of directory files
 	headerFile: "headfile.html",
 	footerFile: "footfile.html",
