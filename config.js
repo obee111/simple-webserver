@@ -9,6 +9,12 @@ var config = {
 	port: 8080,
 	// hostname (?)
 	host: "localhost",
+	// Does a lack of an index file in directory return a list of it's contents contents
+	viewDirs: true,
+	// below files determine head/foot of directory files
+	headerFile: "headfile.html",
+	footerFile: "footfile.html",
+
 	// Where your error files are and what each one is named
 	errorFiles: {
 		directory:"error-files/",

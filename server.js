@@ -1,11 +1,13 @@
 var http = require("http");
 var fs = require("fs");
+// local config file (config.js)
 var config = require("./config");
 
 var contType = (ext) => {
 	let type
 	let lang
 	// set the types based on approved file extensions
+	// AYO JIT YOU NEED TO ADD DIFFERENT MEDIA TYPES
 	switch(ext){
 		case "html":
 			type = "text"
@@ -83,9 +85,24 @@ var server = http.createServer((req, res) => {
 				fs.readFile(file, (err, data) => {
 					// if we cant find it we tell them 
 					if (err){
-						res.writeHead(404, {"Content-Type": "text/html"})
-						//res.end(`<html><body><h1>uh uuuuuh: ${file}</h1></body></html>`)
-						res.end(getErrFile(404, config.errorFiles.notFound))
+						fs.readdir(config.contentDir + link + "/", (err, data) => {
+							if (err || !config.viewDirs) { // I don't understand if this would work or why this doesn't
+								res.writeHead(404, {"Content-Type": contType("html")})
+								res.end(getErrFile(404, config.errorFiles.notFound))
+								// console.log(err.message)
+							}
+							else {
+								// Semi sure this works every time
+								res.writeHead(200, {"Content-Type": contType("html")})
+								let header = fs.readFileSync(config.headerFile)
+								let footer = fs.readFileSync(config.footerFile)
+								res.write(header + `<h3>${link}</h3><ul>`);
+								for (var i = 0; i < data.length; i++) {
+									res.write(`<li><a href="${link + "/" + data[i]}">${data[i]}</a></li>`)
+								}
+								res.end("</ul>" + footer);
+							}
+						})
 					}
 					else {
 						// when we find the index file for that dir we just fire it right at them. simple as
@@ -119,8 +136,7 @@ var server = http.createServer((req, res) => {
 		default:
 			res.writeHead(403, {"Content-Type": "text/plain"})
 			res.end(getErrFile(403, config.errorFiles.forbidden))
-
-		break
+			break
 	}
 })
 
