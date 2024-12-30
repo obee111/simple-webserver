@@ -18,7 +18,7 @@ var contType = (ext) => {
 			lang = "css"
 			break
 		case "js":
-			type = "text"
+			type = "application"
 			lang = "javascript"
 			break
 		case "json":
@@ -58,11 +58,35 @@ var server = http.createServer((req, res) => {
 				file = config.contentDir + config.indexFile
 				fs.readFile(file, (err, data) => {
 					if (err){
-						// 410 is file gone. file not found doesnt seem appropriate for /
-						res.writeHead(410, {"Content-Type": "text/html"})
-						// let errRes = fs.readFileSync(config.errorFiles.directory + config.errorFiles.gone)
-						// res.end(errRes)
-						res.end(getErrFile(410, config.errorFiles.gone))
+						if (config.viewDirs) {
+							fs.readdir(config.contentDir, (err, data) => {
+								let header;
+								let footer;
+								try {
+									header = fs.readFileSync(config.headerFile);
+									footer = fs.readFileSync(config.footerFile);
+								}
+								catch(err){
+									header = ""
+									footer = ""
+								}
+
+								res.writeHead(200, {"Content-Type": "text/html"})
+								res.write(header + "<h3>/</h3><ul>")
+								for (var i = 0; i < data.length; i++) {
+									res.write(`<li><a href="${data[i]}">${data[i]}</a></li>`)
+								}
+								res.end("</ul>" + footer)
+							})
+						}
+						else {
+							// 410 is file gone. file not found doesnt seem appropriate for /
+							res.writeHead(410, {"Content-Type": "text/html"})
+							// let errRes = fs.readFileSync(config.errorFiles.directory + config.errorFiles.gone)
+							// res.end(errRes)
+							res.end(getErrFile(410, config.errorFiles.gone))
+						}
+
 					}
 					else {
 						res.writeHead(200, {"Content-Type": "text/html"})
@@ -86,18 +110,30 @@ var server = http.createServer((req, res) => {
 					// if we cant find it we tell them 
 					if (err){
 						fs.readdir(config.contentDir + link + "/", (err, data) => {
-							if (err || !config.viewDirs) { // I don't understand if this would work or why this doesn't
-								res.writeHead(404, {"Content-Type": contType("html")})
+							if (!config.viewDirs) { // I don't understand if this would work or why this doesn't
+								res.writeHead(404, {"Content-Type": "text/html"})
 								res.end(getErrFile(404, config.errorFiles.notFound))
 								// console.log(err.message)
+							}
+							else if (err) {
+								res.writeHead(404, {"Content-Type": "text/html"})
+								res.end("404 and " + err.message)
 							}
 							else {
 								// Semi sure this works every time
 								// Respond with 200 because this is (probably) intentional
 								res.writeHead(200, {"Content-Type": contType("html")})
 								// synchronously load header and footer files
-								let header = fs.readFileSync(config.headerFile)
-								let footer = fs.readFileSync(config.footerFile)
+								let header;
+								let footer;
+								try {
+									header = fs.readFileSync(config.headerFile);
+									footer = fs.readFileSync(config.footerFile);
+								}
+								catch(err){
+									header = ""
+									footer = ""
+								}
 								// respond with header + list + footer
 								res.write(header + `<h3>${link}</h3><ul>`);
 								for (var i = 0; i < data.length; i++) {

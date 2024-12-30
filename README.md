@@ -25,9 +25,9 @@ Everything except for what is listed below is there just for an example
 ```
 .
 	/README.md
-	/package.json
-	/config.js
-	/server.js
+	/package.json (npm shenanigans)
+	/config.js (settings)
+	/server.js (where the magic happens)
 	/content/
 		(directory where content is served from, configurable in config.js)
 	/error-files/
