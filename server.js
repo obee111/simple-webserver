@@ -2,34 +2,17 @@ var http = require("http");
 var fs = require("fs");
 // local config file (config.js)
 var config = require("./config");
+var mimetypes = require("./mimetypes")
 
 var contType = (ext) => {
-	let type
-	let lang
-	// set the types based on approved file extensions
-	// AYO JIT YOU NEED TO ADD DIFFERENT MEDIA TYPES
-	switch(ext){
-		case "html":
-			type = "text"
-			lang = "html"
-			break
-		case "css":
-			type = "text"
-			lang = "css"
-			break
-		case "js":
-			type = "application"
-			lang = "javascript"
-			break
-		case "json":
-			type = "application"
-			lang = "json"
-			break
-		default:
-			type = "text"
-			lang = "plain"
+	let mime;
+	try {
+		mime = mimetypes[ext];
 	}
-	return `${type}/${lang}`
+	catch (e){
+		mime = "text/plain"
+	}
+	return mime
 }
 var getErrFile = (code, errFile) => {
 	fs.readFile(config.errorFiles.directory + errFile, (err, data) => {
@@ -47,13 +30,13 @@ var server = http.createServer((req, res) => {
 	let urlVals = req.url.split("?");
 	let link = urlVals[0];
 	let vals = urlVals[1];
-	console.log(`${req.method}  ${req.url}`)
+	console.log(`${req.method} ${req.url}`)
 	// console.log(`${link} and ${vals}`)
 	switch (req.method){
 		// if its a get request
 		case "GET":
 			// first determine if they want index, index for another dir, or a specific file 
-			let file
+			let file;
 			if (link == "/") {
 				file = config.contentDir + config.indexFile
 				fs.readFile(file, (err, data) => {
@@ -117,7 +100,7 @@ var server = http.createServer((req, res) => {
 							}
 							else if (err) {
 								res.writeHead(404, {"Content-Type": "text/html"})
-								res.end("404 and " + err.message)
+								res.end(getErrFile(404, config.errorFiles.notFound))
 							}
 							else {
 								// Semi sure this works every time
@@ -164,7 +147,8 @@ var server = http.createServer((req, res) => {
 						// isolate the extension 
 						let ext = link.split(".")
 						ext = ext[ext.length-1]
-						// placeholders for the two parts of content type header 
+						// placeholders for the two parts of content type header
+						//console.log(`${ext} ${contType(ext)}`) 
 						res.writeHead(200, {"Content-Type": contType(ext)})
 						res.end(data)
 					}
@@ -173,7 +157,7 @@ var server = http.createServer((req, res) => {
 			break
 		// DO WHAT YOU WANT WITH POST REQUESTS 
 		default:
-			res.writeHead(403, {"Content-Type": "text/plain"})
+			res.writeHead(403, {"Content-Type": "text/html"})
 			res.end(getErrFile(403, config.errorFiles.forbidden))
 			break
 	}
